@@ -1,0 +1,192 @@
+4.1 Optimización de activos
+Formato de imágenes
+
+Mi propuesta es migrar todas las imágenes del sitio a WebP, un formato que reduce el peso entre un 25 % y un 35 % respecto a PNG y JPEG manteniendo una calidad visual equivalente. Para garantizar compatibilidad con navegadores más antiguos, usaría la etiqueta <picture>, que permite ofrecer WebP como primera opción y el formato original como alternativa:
+
+DESPUÉS: imagen con formato moderno y texto alternativo descriptivo -->
+
+<picture>
+
+  <!-- El navegador elige WebP si lo soporta, que es el caso de la mayoría -->
+
+  <source srcset="logo_big.webp" type="image/webp">
+
+  <!-- Alternativa para navegadores más antiguos -->
+
+  <img
+
+    src="logo_big.png"
+
+    alt="Logotipo de Zapp Studio — empresa de desarrollo de apps en Murcia y Madrid"
+
+    width="200"
+
+    height="60"
+
+  >
+
+</picture>
+
+Para los banners de proyectos y las imágenes más pesadas, valoraría también usar AVIF, que puede reducir el peso hasta un 50 % adicional respecto a WebP, aunque su compatibilidad con navegadores algo más antiguos es menor y habría que evaluarlo.
+
+Lazy Loading
+
+Implementaría lazy loading en todas las imágenes que no sean visibles en la primera pantalla. Lo bueno es que esto no requiere ninguna librería externa: basta con añadir el atributo loading="lazy" directamente en HTML:
+
+DESPUÉS: la imagen no se carga hasta que el usuario se acerca a ella -->
+
+<img
+
+  src="proyecto-ejemplo.webp"
+
+  alt="Captura de pantalla del proyecto de app móvil para el sector sanitario"
+
+  loading="lazy"
+
+  width="800"
+
+  height="450"
+
+>
+
+Con esto el navegador solo descarga las imágenes del final de la página cuando el usuario llega hasta ellas, lo que reduce considerablemente el peso inicial de carga.
+
+
+4.2 Reducción de peticiones HTTP
+Vídeo de fondo
+
+El vídeo Summit-2024.mp4 es el recurso que más peso suma en cada visita. Mi primera opción sería sustituirlo por una imagen estática en WebP. Si el cliente insiste en mantener el vídeo, al menos aplicaría estas dos mejoras para reducir su impacto:
+
+DESPUÉS: el vídeo no se descarga hasta que el navegador lo necesita -->
+
+<video
+
+  autoplay
+
+  muted
+
+  loop
+
+  playsinline
+
+  preload="none"
+
+  poster="hero-imagen-estatica.webp"
+
+>
+
+  <!-- preload="none" evita la descarga automática al abrir la página -->
+
+  <source src="Summit-2024.mp4" type="video/mp4">
+
+</video>
+
+Con preload="none" el navegador no descarga el vídeo hasta que sea necesario, y el atributo poster muestra una imagen estática mientras tanto, de modo que el usuario no ve una pantalla en blanco.
+
+Eliminación o aplazamiento de scripts externos
+
+Hay tres recursos que eliminaría o aplazaría sin dudar:
+
+Google Tag Manager: Lo cargaría de forma diferida y únicamente tras el consentimiento explícito del usuario. El atributo defer es suficiente para que no bloquee la carga inicial de la página.
+Google Fonts: Descargaría las fuentes y las serviría desde el propio servidor, eliminando así una petición a un dominio externo en cada visita.
+CSS no utilizado de Elementor: Activaría la opción de Critical CSS que ofrece el propio Elementor, para que solo se cargue el CSS necesario para renderizar la primera pantalla visible.
+
+DESPUÉS: GTM cargado de forma diferida, sin bloquear el renderizado -->
+
+<script defer src="https://www.googletagmanager.com/gtag/js?id=GTM-P78GG9W4"></script>
+
+
+4.3 Mejoras de accesibilidad (HTML semántico)
+Uno de los problemas más claros que detecté es que toda la estructura visual de la web está construida con <div> genéricos generados por Elementor. Esto no solo encarece el rendimiento, sino que hace la web prácticamente opaca para los lectores de pantalla y para los buscadores. Mi propuesta es sustituirla por etiquetas HTML semánticas que den significado real a cada bloque de contenido:
+
+ ANTES: una cadena de divs sin significado semántico -->
+
+<div class="elementor-section elementor-top-section">
+
+  <div class="elementor-container">
+
+    <div class="elementor-widget-wrap">
+
+      <div class="elementor-widget elementor-widget-heading">
+
+        <h2>Desarrollamos tu app</h2>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+DESPUÉS: estructura clara, accesible y comprensible para cualquier tecnología -->
+
+<main>
+
+  <header role="banner">
+
+    <nav aria-label="Navegación principal">
+
+      <a href="/" aria-label="Ir a la página de inicio de Zapp Studio">
+
+        <img src="logo.webp" alt="Zapp Studio" width="150" height="45">
+
+      </a>
+
+    </nav>
+
+  </header>
+
+  <section aria-labelledby="titulo-hero">
+
+    <h1 id="titulo-hero">Desarrollamos tu app móvil a medida</h1>
+
+    <p>Empresa especializada en apps nativas para iOS y Android, con sede en Murcia y Madrid.</p>
+
+  </section>
+
+  <section aria-labelledby="titulo-servicios">
+
+    <h2 id="titulo-servicios">Nuestros servicios</h2>
+
+    <!-- contenido de servicios -->
+
+  </section>
+
+  <footer role="contentinfo">
+
+    <!-- información legal y contacto -->
+
+  </footer>
+
+</main>
+
+
+4.4 Mejora de gobernanza — Banner de cookies transparente
+Para resolver el problema detectado en la Fase 3, implementaría un banner de consentimiento que cumpla el RGPD desde el primer instante: visible, claro, y con las dos opciones igual de accesibles para el usuario:
+
+ Banner de cookies claro, accesible y sin patrones oscuros -->
+
+<div role="dialog" aria-modal="true" aria-labelledby="cookies-titulo" id="banner-cookies">
+
+  <h2 id="cookies-titulo">Usamos cookies</h2>
+
+  <p>
+
+    Usamos cookies propias para el funcionamiento de la web y cookies de terceros
+
+    (analítica) solo si nos das tu consentimiento. Puedes rechazarlas sin que
+
+    eso afecte a tu navegación.
+
+  </p>
+
+  <!-- Ambos botones con el mismo peso visual: sin trucos de diseño -->
+
+  <button id="btn-aceptar" type="button">Aceptar todas</button>
+
+  <button id="btn-rechazar" type="button">Solo esenciales</button>
+
+  <a href="/politica-de-cookies">Más información</a>
+
+</div>
